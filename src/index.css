@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0c1b24;
+  --color-ink-soft: #1a3340;
+  --color-teal: #1a4a5c;
+  --color-teal-mid: #2a6b7c;
+  --color-teal-soft: #3d8a9a;
+  --color-cream: #f5f2eb;
+  --color-cream-dark: #e8e2d6;
+  --color-paper: #faf9f6;
+  --color-muted: #5c6b73;
+  --color-muted-light: #8a969c;
+  --color-accent: #c9a86c;
+  --color-line: #e5e0d6;
+  --color-white: #ffffff;
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+    font-feature-settings: "ss01" on, "cv11" on;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-teal) 25%, transparent);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

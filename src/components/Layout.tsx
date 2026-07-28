@@ -1,20 +1,48 @@
-import { useState } from "react"
-import { Link, NavLink, Outlet } from "react-router-dom"
+import { useEffect, useId, useState } from "react"
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { chapters, site } from "../data/content"
 
+/** Единственное полное меню разделов: шапка (desktop dropdown + mobile drawer) */
 export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()
+  const menuId = useId()
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false)
+    }
+    document.addEventListener("keydown", onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.removeEventListener("keydown", onKey)
+      document.body.style.overflow = prev
+    }
+  }, [menuOpen])
 
   return (
-    <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-line/80 bg-cream/90 backdrop-blur-md">
+    <div className="flex min-h-dvh flex-col">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-cream"
+      >
+        К содержанию
+      </a>
+
+      <header className="sticky top-0 z-50 border-b border-line/70 bg-cream/85 backdrop-blur-md supports-[backdrop-filter]:bg-cream/75">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
           <Link
             to="/"
-            className="group flex min-w-0 items-baseline gap-2.5"
+            className="group flex min-w-0 items-baseline gap-2.5 rounded-lg"
             onClick={() => setMenuOpen(false)}
           >
-            <span className="font-serif text-xl tracking-tight text-ink transition-colors group-hover:text-teal">
+            <span className="font-serif text-xl tracking-tight text-ink transition-colors duration-150 group-hover:text-teal">
               {site.name}
             </span>
             <span className="hidden truncate text-[10px] font-medium uppercase tracking-[0.14em] text-muted-light md:inline">
@@ -22,28 +50,30 @@ export function Layout() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => navClass(isActive)}
-            >
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Основная">
+            <NavLink to="/" end className={({ isActive }) => navClass(isActive)}>
               Главная
             </NavLink>
             <div className="group relative">
               <button
                 type="button"
-                className="rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:bg-cream-dark/60 hover:text-ink sm:px-4"
+                className="inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-sm text-muted transition-colors duration-150 ease-out-soft hover:bg-cream-dark/60 hover:text-ink"
+                aria-haspopup="menu"
               >
                 Разделы
+                <ChevronDown className="ml-1 size-3.5 opacity-60 transition-transform duration-150 ease-out-soft group-hover:rotate-180 group-focus-within:rotate-180" />
               </button>
-              <div className="invisible absolute right-0 top-full z-50 w-72 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                <div className="max-h-[70vh] overflow-y-auto rounded-2xl border border-line bg-paper py-2 shadow-lg shadow-ink/5">
+              <div className="invisible absolute right-0 top-full z-50 w-80 pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out-soft group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <div
+                  role="menu"
+                  className="max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl bg-paper py-2 shadow-elevated"
+                >
                   {chapters.map((ch) => (
                     <Link
                       key={ch.id}
+                      role="menuitem"
                       to={`/razdel/${ch.id}`}
-                      className="flex gap-3 px-4 py-2.5 text-sm transition hover:bg-cream"
+                      className="flex min-h-11 gap-3 px-4 py-2.5 text-sm transition-colors duration-100 ease-out-soft hover:bg-cream"
                     >
                       <span className="shrink-0 tabular-nums text-muted-light">
                         {ch.num}
@@ -58,84 +88,116 @@ export function Layout() {
 
           <button
             type="button"
-            className="rounded-full border border-line px-3 py-1.5 text-sm text-ink lg:hidden"
+            className="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-line bg-paper/80 px-3 text-sm text-ink transition-[background-color,transform] duration-150 ease-out-soft hover:bg-paper active:scale-[0.96] lg:hidden"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
+            aria-controls={menuId}
+            aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
           >
-            {menuOpen ? "Закрыть" : "Меню"}
+            <span className="relative size-5" aria-hidden>
+              <span
+                className={[
+                  "absolute left-0.5 top-[7px] block h-0.5 w-4 rounded-full bg-ink transition-[transform,opacity] duration-200 ease-out-soft",
+                  menuOpen ? "translate-y-[5px] rotate-45" : "",
+                ].join(" ")}
+              />
+              <span
+                className={[
+                  "absolute left-0.5 top-[11px] block h-0.5 w-4 rounded-full bg-ink transition-opacity duration-150 ease-out-soft",
+                  menuOpen ? "opacity-0" : "opacity-100",
+                ].join(" ")}
+              />
+              <span
+                className={[
+                  "absolute left-0.5 top-[15px] block h-0.5 w-4 rounded-full bg-ink transition-[transform,opacity] duration-200 ease-out-soft",
+                  menuOpen ? "-translate-y-[5px] -rotate-45" : "",
+                ].join(" ")}
+              />
+            </span>
           </button>
         </div>
 
-        {menuOpen && (
-          <div className="border-t border-line bg-paper lg:hidden">
-            <div className="mx-auto max-h-[70vh] max-w-6xl overflow-y-auto px-5 py-4 sm:px-8">
+        <div
+          id={menuId}
+          className="drawer-panel border-t border-line bg-paper lg:hidden"
+          data-open={menuOpen}
+        >
+          <div>
+            <div className="mx-auto max-h-[min(70vh,32rem)] max-w-6xl overflow-y-auto px-5 py-4 sm:px-8">
               <Link
                 to="/"
-                className="block py-2 text-sm font-medium"
+                className="flex min-h-11 items-center text-sm font-medium transition-colors duration-100 hover:text-teal"
                 onClick={() => setMenuOpen(false)}
               >
                 Главная
               </Link>
-              <p className="mt-4 mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-light">
+              <p className="mt-5 mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-light">
                 Разделы
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {chapters.map((ch) => (
                   <li key={ch.id}>
                     <Link
                       to={`/razdel/${ch.id}`}
-                      className="flex gap-3 py-2 text-sm"
+                      className="flex min-h-11 gap-3 rounded-xl px-2 py-2 text-sm transition-colors duration-100 hover:bg-cream"
                       onClick={() => setMenuOpen(false)}
                     >
                       <span className="tabular-nums text-muted-light">
                         {ch.num}
                       </span>
-                      <span>{ch.title}</span>
+                      <span className="leading-snug">{ch.title}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-        )}
+        </div>
       </header>
 
-      <main className="flex-1">
+      <main id="main" className="flex-1">
         <Outlet />
       </main>
 
+      {/* Footer без второго полного списка разделов */}
       <footer className="border-t border-line bg-ink text-cream">
-        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-          <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
-            <div>
-              <p className="font-serif text-2xl">{site.title}</p>
-              <p className="mt-2 text-sm text-cream/50">{site.titleEn}</p>
-              <p className="mt-4 max-w-sm text-xs leading-relaxed text-cream/35">
-                Макет по структуре портала · 9 разделов книги
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
-              {chapters.map((ch) => (
-                <Link
-                  key={ch.id}
-                  to={`/razdel/${ch.id}`}
-                  className="text-sm text-cream/55 transition hover:text-cream"
-                >
-                  <span className="mr-2 text-cream/30">{ch.num}</span>
-                  {ch.title}
-                </Link>
-              ))}
-            </div>
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:py-12">
+          <div>
+            <p className="font-serif text-xl tracking-tight">{site.title}</p>
+            <p className="mt-1 text-sm text-cream/45">{site.titleEn}</p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-pretty text-cream/35">
+              По учению {site.book.author} · «{site.book.title}»
+            </p>
           </div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-cream/25">
+            {site.orgShort}
+          </p>
         </div>
       </footer>
     </div>
   )
 }
 
+function ChevronDown({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  )
+}
+
 function navClass(isActive: boolean) {
   return [
-    "rounded-full px-3 py-1.5 text-sm transition-colors sm:px-4",
+    "inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-sm transition-colors duration-150 ease-out-soft",
     isActive
       ? "bg-ink text-cream"
       : "text-muted hover:bg-cream-dark/60 hover:text-ink",

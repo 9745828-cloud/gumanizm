@@ -1,9 +1,11 @@
 import { Link, Navigate, useParams } from "react-router-dom"
+import { BodyBlocks } from "../components/BodyBlocks"
 import { ChapterVisualBlock } from "../components/ChapterVisual"
 import {
   chapters,
   getChapter,
   getChapterIndex,
+  site,
 } from "../data/content"
 
 export function Chapter() {
@@ -17,146 +19,178 @@ export function Chapter() {
   const index = getChapterIndex(chapter.id)
   const prev = index > 0 ? chapters[index - 1] : null
   const next = index < chapters.length - 1 ? chapters[index + 1] : null
+  const progress = ((index + 1) / chapters.length) * 100
+  const hasBodies = chapter.sections.some((s) => s.body && s.body.length > 0)
 
   return (
     <>
+      <div
+        className="pointer-events-none sticky top-16 z-40 h-0.5 w-full bg-line/60"
+        aria-hidden
+      >
+        <div
+          className="h-full bg-teal-mid/80 transition-[width] duration-300 ease-out-soft"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
       <section className="border-b border-line">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-teal-mid">
+        <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8 sm:py-20">
+          <p className="enter-stagger enter-stagger-1 mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-teal-mid">
             Раздел {chapter.num} из 09
           </p>
-          <h1 className="max-w-3xl font-serif text-4xl leading-tight tracking-tight text-balance sm:text-5xl">
+          <h1 className="enter-stagger enter-stagger-2 font-serif text-4xl leading-[1.12] tracking-tight text-balance sm:text-5xl">
             {chapter.title}
           </h1>
+          {chapter.id === "gumanistika-imya-chelovechestva" ||
+          chapter.id === "sudba-mira" ? (
+            <p className="enter-stagger enter-stagger-3 mt-5 text-sm text-muted-light">
+              {site.book.author} · «{site.book.title}»
+            </p>
+          ) : null}
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-4 lg:grid-cols-3">
+      {/* Reading body when filled */}
+      {hasBodies ? (
+        <div className="border-b border-line px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-3xl space-y-16">
             {chapter.sections.map((section, i) => (
-              <article
-                key={section.title}
-                className={[
-                  "rounded-2xl border border-line p-7 sm:p-8",
-                  i === 1 ? "bg-ink text-cream lg:translate-y-2" : "bg-paper",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "text-[11px] font-medium uppercase tracking-[0.18em]",
-                    i === 1 ? "text-accent" : "text-teal-mid",
-                  ].join(" ")}
-                >
+              <section key={section.title} id={`s${i + 1}`}>
+                <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] tabular-nums text-teal-mid">
                   {(i + 1).toString().padStart(2, "0")}
-                </span>
-                <h2 className="mt-4 font-serif text-2xl leading-snug">
+                </p>
+                <h2 className="font-serif text-2xl tracking-tight text-balance sm:text-3xl">
                   {section.title}
                 </h2>
-                <p
-                  className={[
-                    "mt-4 text-base leading-relaxed",
-                    i === 1 ? "text-cream/65" : "text-muted",
-                  ].join(" ")}
-                >
-                  {section.text}
-                </p>
-                <p
-                  className={[
-                    "mt-8 text-xs uppercase tracking-wider",
-                    i === 1 ? "text-cream/30" : "text-muted-light",
-                  ].join(" ")}
-                >
-                  Полный текст · скоро
-                </p>
-              </article>
+                {section.body ? (
+                  <div className="mt-6">
+                    <BodyBlocks blocks={section.body} />
+                  </div>
+                ) : (
+                  <p className="mt-4 text-base leading-relaxed text-muted">
+                    {section.text}
+                  </p>
+                )}
+              </section>
             ))}
           </div>
         </div>
-      </section>
+      ) : (
+        <section className="border-b border-line px-5 py-14 sm:px-8 sm:py-16">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
+              {chapter.sections.map((section, i) => {
+                const isAccent = i === 1
+                return (
+                  <article
+                    key={section.title}
+                    className={[
+                      "flex flex-col rounded-2xl p-7 sm:p-8",
+                      isAccent
+                        ? "bg-ink text-cream shadow-ink lg:translate-y-2"
+                        : "surface-card",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "text-[11px] font-medium uppercase tracking-[0.18em] tabular-nums",
+                        isAccent ? "text-accent" : "text-teal-mid",
+                      ].join(" ")}
+                    >
+                      {(i + 1).toString().padStart(2, "0")}
+                    </span>
+                    <h2 className="mt-4 font-serif text-2xl leading-snug text-balance">
+                      {section.title}
+                    </h2>
+                    <p
+                      className={[
+                        "mt-4 flex-1 text-base leading-relaxed text-pretty",
+                        isAccent ? "text-cream/65" : "text-muted",
+                      ].join(" ")}
+                    >
+                      {section.text}
+                    </p>
+                    <p
+                      className={[
+                        "mt-8 text-xs uppercase tracking-wider",
+                        isAccent ? "text-cream/30" : "text-muted-light",
+                      ].join(" ")}
+                    >
+                      Текст · скоро
+                    </p>
+                  </article>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {chapter.visual && <ChapterVisualBlock visual={chapter.visual} />}
 
-      {/* Chapter nav */}
-      <nav className="border-t border-line px-5 py-10 sm:px-8">
-        <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2">
+      {/* Only prev/next — no third full chapter index */}
+      <nav
+        className="border-t border-line px-5 py-10 sm:px-8"
+        aria-label="Соседние разделы"
+      >
+        <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
           {prev ? (
             <Link
               to={`/razdel/${prev.id}`}
-              className="group rounded-2xl border border-line bg-paper p-5 transition hover:border-teal-mid/30"
+              className="surface-card surface-card-hover group p-5"
             >
               <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-light">
                 ← Предыдущий
               </span>
-              <p className="mt-2 font-serif text-lg leading-snug group-hover:text-teal">
-                <span className="mr-2 text-muted-light">{prev.num}</span>
+              <p className="mt-2 font-serif text-lg leading-snug text-balance transition-colors duration-150 group-hover:text-teal">
+                <span className="mr-2 tabular-nums text-muted-light">
+                  {prev.num}
+                </span>
                 {prev.title}
               </p>
             </Link>
           ) : (
-            <div />
+            <Link
+              to="/"
+              className="surface-card surface-card-hover group p-5"
+            >
+              <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-light">
+                ← На главную
+              </span>
+              <p className="mt-2 font-serif text-lg leading-snug group-hover:text-teal">
+                Гуманистика — имя человечности
+              </p>
+            </Link>
           )}
           {next ? (
             <Link
               to={`/razdel/${next.id}`}
-              className="group rounded-2xl border border-line bg-paper p-5 text-right transition hover:border-teal-mid/30 sm:justify-self-end"
+              className="surface-card surface-card-hover group p-5 text-right sm:justify-self-end"
             >
               <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-light">
                 Следующий →
               </span>
-              <p className="mt-2 font-serif text-lg leading-snug group-hover:text-teal">
-                <span className="mr-2 text-muted-light">{next.num}</span>
+              <p className="mt-2 font-serif text-lg leading-snug text-balance transition-colors duration-150 group-hover:text-teal">
+                <span className="mr-2 tabular-nums text-muted-light">
+                  {next.num}
+                </span>
                 {next.title}
               </p>
             </Link>
           ) : (
             <Link
               to="/"
-              className="group rounded-2xl border border-line bg-ink p-5 text-cream sm:justify-self-end sm:text-right"
+              className="group rounded-2xl bg-ink p-5 text-cream shadow-ink sm:justify-self-end sm:text-right"
             >
               <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-accent">
-                К содержанию
+                На главную
               </span>
-              <p className="mt-2 font-serif text-lg">Все разделы →</p>
+              <p className="mt-2 font-serif text-lg">К чтению →</p>
             </Link>
           )}
         </div>
       </nav>
-
-      {/* All chapters mini-index */}
-      <section className="border-t border-line bg-paper/50 px-5 py-12 sm:px-8">
-        <div className="mx-auto max-w-6xl">
-          <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-light">
-            Все разделы
-          </p>
-          <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {chapters.map((ch) => (
-              <li key={ch.id}>
-                <Link
-                  to={`/razdel/${ch.id}`}
-                  className={[
-                    "flex gap-3 rounded-xl px-3 py-2 text-sm transition",
-                    ch.id === chapter.id
-                      ? "bg-ink text-cream"
-                      : "text-muted hover:bg-cream-dark/50 hover:text-ink",
-                  ].join(" ")}
-                >
-                  <span
-                    className={
-                      ch.id === chapter.id
-                        ? "text-accent"
-                        : "text-muted-light"
-                    }
-                  >
-                    {ch.num}
-                  </span>
-                  <span className="leading-snug">{ch.title}</span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
     </>
   )
 }

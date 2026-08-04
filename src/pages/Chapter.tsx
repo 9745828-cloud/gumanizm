@@ -129,6 +129,59 @@ export function Chapter() {
 
       {chapter.visual && <ChapterVisualBlock visual={chapter.visual} />}
 
+      {chapter.articles && chapter.articles.length > 0 ? (
+        <section
+          className="border-b border-line px-5 py-14 sm:px-8 sm:py-16"
+          aria-labelledby="chapter-articles-heading"
+        >
+          <div className="mx-auto max-w-3xl">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-teal-mid">
+              Наполнение раздела
+            </p>
+            <h2
+              id="chapter-articles-heading"
+              className="font-serif text-2xl tracking-tight sm:text-3xl"
+            >
+              Статьи
+            </h2>
+            <p className="mt-3 max-w-xl text-base leading-relaxed text-muted">
+              Первые материалы к разделу. Список будет пополняться.
+            </p>
+
+            <ul className="mt-10 space-y-4">
+              {chapter.articles.map((article, i) => (
+                <li key={article.id}>
+                  <Link
+                    to={`/razdel/${chapter.id}/statya/${article.id}`}
+                    className="surface-card surface-card-hover group flex flex-col gap-3 p-6 sm:flex-row sm:items-start sm:gap-6 sm:p-7"
+                  >
+                    <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.18em] tabular-nums text-teal-mid">
+                      {(i + 1).toString().padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      {article.subject ? (
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-light">
+                          {article.subject}
+                        </p>
+                      ) : null}
+                      <h3 className="font-serif text-xl leading-snug text-balance transition-colors duration-150 group-hover:text-teal sm:text-2xl">
+                        {article.title}
+                      </h3>
+                      <p className="mt-3 text-base leading-relaxed text-pretty text-muted">
+                        {article.lead}
+                      </p>
+                      <p className="mt-5 text-sm font-medium text-teal-mid transition-colors group-hover:text-teal">
+                        Читать →
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
+
       {/* Only prev/next — no third full chapter index */}
       <nav
         className="border-t border-line px-5 py-10 sm:px-8"

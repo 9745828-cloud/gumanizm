@@ -1,5 +1,7 @@
 /** Структура и тексты — по «структура портала.docx» и учению Салех Бея Гарабаглы */
 
+import { articleConfucius } from "./articles/confucius"
+
 export const site = {
   name: "Гуманистика",
   title: "Гуманистика. Быть человеком",
@@ -53,12 +55,25 @@ export type ChapterVisual =
       items: { value: string; label: string; sub?: string }[]
     }
 
+/** Полнотекстовая статья внутри раздела (первая из серии — и далее) */
+export type Article = {
+  id: string
+  title: string
+  /** Краткий анонс для карточки списка */
+  lead: string
+  /** Тема / герой (например, «Конфуций») */
+  subject?: string
+  body: BodyBlock[]
+}
+
 export type Chapter = {
   id: string
   num: string
   title: string
   sections: ChapterSection[]
   visual?: ChapterVisual
+  /** Статьи раздела — список на странице раздела, чтение на /statya/:articleId */
+  articles?: Article[]
 }
 
 /**
@@ -231,6 +246,7 @@ export const chapters: Chapter[] = [
         },
       ],
     },
+    articles: [articleConfucius],
   },
   {
     id: "sudba-mira",
@@ -443,4 +459,15 @@ export function getChapter(id: string): Chapter | undefined {
 
 export function getChapterIndex(id: string): number {
   return chapters.findIndex((c) => c.id === id)
+}
+
+export function getArticle(
+  chapterId: string,
+  articleId: string,
+): { chapter: Chapter; article: Article; index: number } | undefined {
+  const chapter = getChapter(chapterId)
+  if (!chapter?.articles?.length) return undefined
+  const index = chapter.articles.findIndex((a) => a.id === articleId)
+  if (index < 0) return undefined
+  return { chapter, article: chapter.articles[index], index }
 }

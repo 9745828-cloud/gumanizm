@@ -35,11 +35,20 @@ npm run dev
 
 ## GitHub Pages
 
-Сайт публикуется с **Actions** (workflow `.github/workflows/deploy-pages.yml`).
+URL: https://9745828-cloud.github.io/gumanizm/
 
-- URL: https://9745828-cloud.github.io/gumanizm/
-- В коде: `base: '/gumanizm/'` (Vite) и `basename="/gumanizm"` (React Router)
-- В Settings → Pages выберите **Source: GitHub Actions** (не Branch / root — иначе отдаётся сырой `index.html` и белый экран)
+Публикуется ветка **`gh-pages`** (собранный `dist/`, не исходники).
 
-После push в `main` дождитесь зелёного workflow **Deploy GitHub Pages**.
+В коде:
+- Vite `base: '/gumanizm/'`
+- React Router `basename="/gumanizm"`
 
+Обновить сайт после правок:
+
+```bash
+./scripts/deploy-gh-pages.sh
+```
+
+Settings → Pages: **Deploy from a branch** → `gh-pages` / `/ (root)`.
+
+> Не публикуйте `main` из корня: там сырой `index.html` со ссылкой на `/src/main.tsx` — будет белый экран.

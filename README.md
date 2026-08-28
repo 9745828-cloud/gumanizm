@@ -33,3 +33,13 @@ npm install
 npm run dev
 ```
 
+## GitHub Pages
+
+Сайт публикуется с **Actions** (workflow `.github/workflows/deploy-pages.yml`).
+
+- URL: https://9745828-cloud.github.io/gumanizm/
+- В коде: `base: '/gumanizm/'` (Vite) и `basename="/gumanizm"` (React Router)
+- В Settings → Pages выберите **Source: GitHub Actions** (не Branch / root — иначе отдаётся сырой `index.html` и белый экран)
+
+После push в `main` дождитесь зелёного workflow **Deploy GitHub Pages**.
+

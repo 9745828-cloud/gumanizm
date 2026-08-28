@@ -6,7 +6,7 @@ import { Home } from "./pages/Home"
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/gumanizm">
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Home />} />

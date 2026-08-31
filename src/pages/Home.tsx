@@ -28,9 +28,14 @@ export function Home() {
           <h1 className="enter-stagger enter-stagger-2 font-serif text-4xl leading-[1.1] tracking-tight text-balance sm:text-5xl md:text-[3.25rem]">
             {homePage.title}
           </h1>
-          <p className="enter-stagger enter-stagger-3 mt-6 text-lg leading-relaxed text-pretty text-muted sm:text-xl">
-            {homePage.lead}
-          </p>
+          <aside className="enter-stagger enter-stagger-3 mt-8 rounded-2xl border border-teal-mid/15 bg-teal-mid/[0.06] px-5 py-5 sm:px-6 sm:py-6">
+            <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.18em] text-teal-mid/80">
+              К сути
+            </p>
+            <p className="font-serif text-xl leading-relaxed text-pretty text-ink sm:text-2xl">
+              {homePage.accent}
+            </p>
+          </aside>
           <p className="enter-stagger enter-stagger-4 mt-6 text-sm text-muted-light">
             {site.book.author} · «{site.book.title}»
           </p>

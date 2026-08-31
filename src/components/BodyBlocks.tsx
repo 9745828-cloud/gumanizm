@@ -16,6 +16,26 @@ export function BodyBlocks({ blocks }: { blocks: BodyBlock[] }) {
           )
         }
         if (block.type === "quote") {
+          if (block.key) {
+            return (
+              <aside
+                key={i}
+                className="rounded-2xl border border-teal-mid/15 bg-teal-mid/[0.06] px-5 py-5 sm:px-6 sm:py-6"
+              >
+                <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.18em] text-teal-mid/80">
+                  К сути
+                </p>
+                <p className="font-serif text-xl leading-relaxed text-pretty text-ink sm:text-2xl">
+                  {block.text}
+                </p>
+                {block.cite ? (
+                  <footer className="mt-3 text-xs uppercase tracking-[0.14em] text-muted-light">
+                    {block.cite}
+                  </footer>
+                ) : null}
+              </aside>
+            )
+          }
           return (
             <blockquote
               key={i}

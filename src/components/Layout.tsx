@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react"
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { chapters, site } from "../data/content"
 
@@ -7,10 +7,41 @@ export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const menuId = useId()
+  const scrollPositions = useRef(new Map<string, number>())
+  const prevPathname = useRef(location.pathname)
+
+  useEffect(() => {
+    // Сами решаем, куда скроллить: иначе браузер вернёт и главную «на середину»
+    window.history.scrollRestoration = "manual"
+  }, [])
 
   useEffect(() => {
     setMenuOpen(false)
   }, [location.pathname])
+
+  /** Главная — всегда сверху; разделы/статьи — помнят, где остановились */
+  useLayoutEffect(() => {
+    const prev = prevPathname.current
+    if (prev !== "/") {
+      scrollPositions.current.set(prev, window.scrollY)
+    }
+    prevPathname.current = location.pathname
+
+    if (location.pathname === "/") {
+      if (location.hash) {
+        const el = document.querySelector(location.hash)
+        if (el) {
+          el.scrollIntoView()
+          return
+        }
+      }
+      window.scrollTo(0, 0)
+      return
+    }
+
+    const y = scrollPositions.current.get(location.pathname) ?? 0
+    window.scrollTo(0, y)
+  }, [location.pathname, location.hash])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -84,6 +115,12 @@ export function Layout() {
                 </div>
               </div>
             </div>
+            <NavLink
+              to="/o-proekte"
+              className={({ isActive }) => navClass(isActive)}
+            >
+              О проекте
+            </NavLink>
           </nav>
 
           <button
@@ -131,6 +168,13 @@ export function Layout() {
               >
                 Главная
               </Link>
+              <Link
+                to="/o-proekte"
+                className="flex min-h-11 items-center text-sm font-medium transition-colors duration-100 hover:text-teal"
+                onClick={() => setMenuOpen(false)}
+              >
+                О проекте
+              </Link>
               <p className="mt-5 mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-light">
                 Разделы
               </p>
@@ -168,6 +212,12 @@ export function Layout() {
             <p className="mt-3 max-w-md text-sm leading-relaxed text-pretty text-cream/35">
               По учению {site.book.author} · «{site.book.title}»
             </p>
+            <Link
+              to="/o-proekte"
+              className="mt-4 inline-block text-sm text-cream/55 transition-colors hover:text-cream"
+            >
+              О проекте →
+            </Link>
           </div>
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-cream/25">
             {site.orgShort}

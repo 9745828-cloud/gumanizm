@@ -53,6 +53,11 @@ export function Chapter() {
               {site.book.author} · «{site.book.title}»
             </p>
           ) : null}
+          {chapter.intro ? (
+            <p className="enter-stagger enter-stagger-3 mt-6 max-w-2xl text-lg leading-relaxed text-pretty text-muted sm:text-xl">
+              {chapter.intro}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -92,9 +97,6 @@ export function Chapter() {
           aria-labelledby="chapter-articles-heading"
         >
           <div className="mx-auto max-w-3xl">
-            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-teal-mid">
-              Наполнение раздела
-            </p>
             <h2
               id="chapter-articles-heading"
               className="font-serif text-2xl tracking-tight sm:text-3xl"

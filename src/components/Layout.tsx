@@ -5,8 +5,11 @@ import { chapters, site } from "../data/content"
 /** Единственное полное меню разделов: шапка (desktop dropdown + mobile drawer) */
 export function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sectionsOpen, setSectionsOpen] = useState(false)
   const location = useLocation()
   const menuId = useId()
+  const sectionsMenuId = useId()
+  const sectionsRef = useRef<HTMLDivElement>(null)
   const scrollPositions = useRef(new Map<string, number>())
   const prevPathname = useRef(location.pathname)
 
@@ -17,6 +20,7 @@ export function Layout() {
 
   useEffect(() => {
     setMenuOpen(false)
+    setSectionsOpen(false)
   }, [location.pathname])
 
   /** Главная — всегда сверху; разделы/статьи — помнят, где остановились */
@@ -57,6 +61,25 @@ export function Layout() {
     }
   }, [menuOpen])
 
+  useEffect(() => {
+    if (!sectionsOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSectionsOpen(false)
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      const root = sectionsRef.current
+      if (root && !root.contains(e.target as Node)) {
+        setSectionsOpen(false)
+      }
+    }
+    document.addEventListener("keydown", onKey)
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => {
+      document.removeEventListener("keydown", onKey)
+      document.removeEventListener("pointerdown", onPointerDown)
+    }
+  }, [sectionsOpen])
+
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -85,16 +108,38 @@ export function Layout() {
             <NavLink to="/" end className={({ isActive }) => navClass(isActive)}>
               Главная
             </NavLink>
-            <div className="group relative">
+            <div className="relative" ref={sectionsRef}>
               <button
                 type="button"
-                className="inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-sm text-muted transition-colors duration-150 ease-out-soft hover:bg-cream-dark/60 hover:text-ink"
+                className={[
+                  "inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-sm transition-colors duration-150 ease-out-soft",
+                  sectionsOpen
+                    ? "bg-ink text-cream"
+                    : "text-muted hover:bg-cream-dark/60 hover:text-ink",
+                ].join(" ")}
                 aria-haspopup="menu"
+                aria-expanded={sectionsOpen}
+                aria-controls={sectionsMenuId}
+                onClick={() => setSectionsOpen((v) => !v)}
               >
                 Разделы
-                <ChevronDown className="ml-1 size-3.5 opacity-60 transition-transform duration-150 ease-out-soft group-hover:rotate-180 group-focus-within:rotate-180" />
+                <ChevronDown
+                  className={[
+                    "ml-1 size-3.5 opacity-60 transition-transform duration-150 ease-out-soft",
+                    sectionsOpen ? "rotate-180" : "",
+                  ].join(" ")}
+                />
               </button>
-              <div className="invisible absolute right-0 top-full z-50 w-80 pt-2 opacity-0 transition-[opacity,visibility] duration-150 ease-out-soft group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div
+                id={sectionsMenuId}
+                hidden={!sectionsOpen}
+                className={[
+                  "absolute right-0 top-full z-50 w-80 pt-2 transition-[opacity,visibility] duration-150 ease-out-soft",
+                  sectionsOpen
+                    ? "visible opacity-100"
+                    : "invisible pointer-events-none opacity-0",
+                ].join(" ")}
+              >
                 <div
                   role="menu"
                   className="max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl bg-paper py-2 shadow-elevated"
@@ -105,6 +150,7 @@ export function Layout() {
                       role="menuitem"
                       to={`/razdel/${ch.id}`}
                       className="flex min-h-11 gap-3 px-4 py-2.5 text-sm transition-colors duration-100 ease-out-soft hover:bg-cream"
+                      onClick={() => setSectionsOpen(false)}
                     >
                       <span className="shrink-0 tabular-nums text-muted-light">
                         {ch.num}
